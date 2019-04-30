@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    function Sale(price) {
+      this.price = pirce || 100;
+    }
+    Sale.prototype.getPrice = function () {
+      return this.price;
+    }
+
+    Sale.prototype.decorate = function (decorator) {
+      var F = function () {},
+      overrides = this.constructor.decorators[decorator],
+      i,newobj;
+
+      F.prototype = this;
+      newobj = new F();
+      newobj.uber = F.prototype;//时uber，继承该Sale实例
+      for (i in overrides){
+        if (overrides.hasOwnProperty(i)){
+          newobj[i] = overrides[i];
+        }
+      }
+      return newobj;
+    }
+
+    Sale.decorators = {};
+    Sale.decorators.fedtax = {
+      getPrice: function () {
+        var price = this.uber.getPrice();//从父对象的方法取得price值
+        price += price * 5 / 100;
+        return price;
+      }
+    }
+  </script>
+</body>
+</html>
