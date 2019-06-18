@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Document</title>
+</head>
+<body>
+  <script>
+    //观察者队列及其自身的操作方法
+    class ObserverList {
+      constructor(){
+        this.list = [];
+      }
+      //队列长度
+      get length(){
+        return this.list.length;
+      }
+
+      //队列操作逻辑
+      add(ob){
+        return this.list.push(ob);
+      }
+
+      del(ob){
+        let index = this.list.indexOf(ob);
+        return this.list.splice(index, 1);
+      }
+
+      get(index){
+        return this.list[index];
+      }
+
+      empty(){
+        return this.list = [];
+      }
+    }
+
+    //单个观察者对象
+    class Observer {
+      constructor(callback){//传入回调函数在目标发生变换后调用
+        this.update = callback;
+      }
+    }
+
+    //被观察对象的监听器
+    class Subject {
+      constructor(){
+        this.observers = new ObserverList();
+      }
+
+      //目标发生改变时，通知全部观察者(在什么时候通知,需要自主添加逻辑)
+      //(如，我需要在点击事件的回调时触发)
+      notify(){
+        for(let i = 0; i < this.observers.length; i++){
+          this.observers.get(i).update();
+        }
+      }
+
+      addObserver(ob){
+        this.observers.add(ob);
+      }
+
+      removeObserver(ob){
+        this.observers.del(ob);
+      }
+    }
+
+
+
+    class SubscribePipe {
+      constructor(){
+        this.list = {};
+      }
+
+      publish(name, ...args){
+        this.list[name].apply(null, args);
+      }
+
+      subscribe(name, callback){
+        this.list[name] = callback;
+      }
+
+      unsubscribe(name){
+        delete this.list[name];
+      }
+    }
+
+
+    let eventList = new SubscribePipe();
+    eventList.subscribe('al', function (word) {
+      console.log(word);
+    });
+    eventList.publish('al', 'Hi');
+
+    let module = (function (){
+  let _private = {
+    i: 5,
+    get(){
+      console.log(this.i);
+    },
+
+    set(val){
+      this.i = val;
+    }
+  }
+
+  return {
+    facade(args){
+      _private.set(args.val);
+      _private.get();
+    }
+  }
+})();
+
+//内部状态管理
+const BookFactory = (function () {
+  let existingBooks = {}, existingBook;
+
+  //内部信息
+  const Book = function (title, author, pageCount, ISBN){
+    this.title = title;
+    this.author = author;
+    this.pageCount = pageCount;
+    this.ISBN = ISBN;
+  }
+
+  return {
+    createBook: function (title, author, pageCount, ISBN) {
+      existingBook = existingBooks[ISBN];
+
+      if(!!existingBook){
+        return existingBook;
+      } else {
+        let book = new Book(title, author, pageCount, ISBN);
+        existingBooks[ISBN] = book;
+        return book;
+      }
+    }
+  }
+})();
+
+const BookRecordManager = (function () {
+  let BookRecordDatabase = {};
+
+  return {
+    addBookRecord(id, title, author, pageCount, ISBN, checkOutDate,
+    checkOutNumber, returnDate, availability){
+      let book = BookFactory.createBook(title, author, pageCount, ISBN);
+
+      BookRecordDatabase[id] = {
+        book,
+        checkOutDate,
+        checkOutNumber,
+        availability,
+        returnDate
+      }
+    },
+
+    updateCheckoutStatus(id, checkOutDate, checkOutNumber, returnDate, availability){
+      let record = BookRecordDatabase[id];
+      record.checkOutDate = checkOutDate;
+      record.checkOutNumber = checkOutNumber;
+      //......
+    }
+  }
+})()
+  </script>
+</body>
+</html>
